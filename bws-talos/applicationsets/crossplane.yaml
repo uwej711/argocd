@@ -47,6 +47,10 @@ spec:
             valueFiles:
               - $values/{{.metadata.annotations.applications_repo_path}}/config/{{.values.addonChart}}/values.yaml
               - $values/{{.metadata.annotations.applications_repo_path}}/config/{{.values.addonChart}}/{{.metadata.labels.environment}}.yaml
+            values: |
+              provider:
+                packages:
+                  - xpkg.crossplane.io/crossplane-contrib/provider-openstack:v0.9.0
       destination:
         namespace: crossplane-system
         name: '{{.name}}'

@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: crossplane-openstack
+  name: crossplane-openstack-config
   namespace: argocd
 spec:
   goTemplate: true
@@ -14,9 +14,9 @@ spec:
         generators:
           - clusters:
               values:
-                addonChart: crossplane-openstack-kustomize
+                addonChart: crossplane-openstack-config
                 addonChartVersion: main
-                addonChartRepository: https://github.com/uwej711/crossplane-openstack-kustomize.git
+                addonChartRepository: https://github.com/uwej711/crossplane-openstack-config.git
           - clusters:
               selector:
                 matchLabels:
@@ -38,15 +38,6 @@ spec:
         - repoURL: '{{.values.addonChartRepository}}'
           path: '.'
           targetRevision: '{{.values.addonChartVersion}}'
-          kustomize:
-            patches:
-              - target:
-                  kind: pkg.crossplane.io.Provider
-                  name: provider-openstack
-                patch: |-
-                  - op: replace
-                    path: /spec/package
-                    value: xpkg.crossplane.io/crossplane-contrib/provider-openstack:v0.9.0
       destination:
         namespace: crossplane-system
         name: '{{.name}}'
