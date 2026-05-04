@@ -1,0 +1,62 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: crossplane-openstack
+  namespace: argocd
+spec:
+  goTemplate: true
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+    - merge:
+        mergeKeys: [server]
+        generators:
+          - clusters:
+              values:
+                addonChart: crossplane-openstack-kustomize
+                addonChartVersion: main
+                addonChartRepository: https://github.com/uwej711/crossplane-openstack-kustomize.git
+          - clusters:
+              selector:
+                matchLabels:
+                  environment: staging
+              values:
+                addonChartVersion: main
+          - clusters:
+              selector:
+                matchLabels:
+                  environment: production
+              values:
+                addonChartVersion: main
+  template:
+    metadata:
+      name: '{{.values.addonChart}}'
+    spec:
+      project: default
+      sources:
+        - repoURL: '{{.values.addonChartRepository}}'
+          path: '.'
+          targetRevision: '{{.values.addonChartVersion}}'
+          kustomize:
+            patches:
+              - target:
+                  kind: pkg.crossplane.io.Provider
+                  name: provider-openstack
+                patch: |-
+                  - op: replace
+                    path: /spec/package
+                    value: xpkg.crossplane.io/crossplane-contrib/provider-openstack:v0.9.0
+      destination:
+        namespace: crossplane-system
+        name: '{{.name}}'
+      syncPolicy:
+        managedNamespaceMetadata:
+          labels:
+            access-cluster-secrets: "true"
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
