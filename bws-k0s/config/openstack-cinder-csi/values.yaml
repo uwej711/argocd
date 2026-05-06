@@ -9,3 +9,5 @@ csi:
       - name: cacert
         hostPath:
           path: /etc/ssl/certs/ca-certificates
+    nodePlugin:
+      kubeletDir: /var/lib/k0s/kubelet
